@@ -1,20 +1,13 @@
 import { MESSAGE_TYPES } from "../../shared/constants.js";
-import type { LogEntry, RuntimeMessage, RuntimeResponse, Settings } from "../../shared/types.js";
+import type { RuntimeMessage, RuntimeResponse, Settings, Stats } from "../../shared/types.js";
 
 const enabledInput = getElement<HTMLInputElement>("enabled");
 const summary = getElement<HTMLElement>("summary");
-const logsElement = getElement<HTMLElement>("logs");
+const filteredCount = getElement<HTMLElement>("filteredCount");
 const notice = getElement<HTMLElement>("notice");
 
 getElement<HTMLButtonElement>("openOptions").addEventListener("click", () => {
   chrome.runtime.openOptionsPage();
-});
-
-getElement<HTMLButtonElement>("clearLogs").addEventListener("click", async () => {
-  await runAction(async () => {
-    await sendMessage({ type: MESSAGE_TYPES.CLEAR_LOGS });
-    await refresh();
-  });
 });
 
 enabledInput.addEventListener("change", () => saveQuickSettings());
@@ -22,14 +15,14 @@ enabledInput.addEventListener("change", () => saveQuickSettings());
 refresh();
 
 async function refresh() {
-  const [settings, logs] = await Promise.all([
+  const [settings, stats] = await Promise.all([
     sendMessage<Settings>({ type: MESSAGE_TYPES.GET_SETTINGS }),
-    sendMessage<LogEntry[]>({ type: MESSAGE_TYPES.GET_LOGS })
+    sendActiveTabMessage<Stats>({ type: MESSAGE_TYPES.GET_CONTENT_STATS }).catch(() => ({ filteredCount: 0 }))
   ]);
 
   enabledInput.checked = settings.enabled;
   summary.textContent = `${settings.keywords.length} 正文 · ${settings.usernameKeywords.length} 用户名 · ${settings.whitelistHandles.length} 白名单`;
-  renderLogs(logs.slice(0, 10));
+  filteredCount.textContent = formatCount(stats.filteredCount);
 }
 
 async function saveQuickSettings() {
@@ -53,23 +46,6 @@ async function runAction(action: () => Promise<void>): Promise<void> {
   }
 }
 
-function renderLogs(logs: LogEntry[]): void {
-  if (!logs.length) {
-    logsElement.innerHTML = '<div class="muted">暂无日志</div>';
-    return;
-  }
-
-  logsElement.innerHTML = logs.map((log) => `
-    <div class="log-item log-${escapeHtml(log.level || "info")}">
-      <div class="log-meta">
-        <span>${escapeHtml(formatTime(log.createdAt))}</span>
-        <span>${escapeHtml(log.matchedKeyword || "")}</span>
-      </div>
-      <div class="log-message">${escapeHtml(log.message || "")}</div>
-    </div>
-  `).join("");
-}
-
 function sendMessage<T>(message: RuntimeMessage): Promise<T> {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(message, (rawResponse) => {
@@ -90,23 +66,35 @@ function sendMessage<T>(message: RuntimeMessage): Promise<T> {
   });
 }
 
-function formatTime(value: number): string {
-  if (!value) {
-    return "";
-  }
+function sendActiveTabMessage<T>(message: RuntimeMessage): Promise<T> {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+      if (!tab?.id) {
+        reject(new Error("No active tab"));
+        return;
+      }
 
-  return new Intl.DateTimeFormat("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(new Date(value));
+      chrome.tabs.sendMessage(tab.id, message, (rawResponse) => {
+        const response = rawResponse as RuntimeResponse<T> | undefined;
+        const error = chrome.runtime.lastError;
+        if (error) {
+          reject(new Error(error.message));
+          return;
+        }
+
+        if (!response?.ok) {
+          reject(new Error(response?.error || "Message failed"));
+          return;
+        }
+
+        resolve(response.payload);
+      });
+    });
+  });
 }
 
-function escapeHtml(value: unknown): string {
-  return String(value || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function formatCount(value: number): string {
+  return new Intl.NumberFormat("zh-CN").format(value);
 }
 
 function getElement<T extends HTMLElement>(id: string): T {

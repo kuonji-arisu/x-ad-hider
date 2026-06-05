@@ -39,4 +39,17 @@ declare namespace chrome {
       ): void;
     }
   }
+
+  namespace tabs {
+    type Tab = {
+      id?: number;
+    };
+
+    function query(
+      queryInfo: { active?: boolean; currentWindow?: boolean },
+      callback: (tabs: Tab[]) => void
+    ): void;
+
+    function sendMessage(tabId: number, message: unknown, callback: (response: unknown) => void): void;
+  }
 }

@@ -16,6 +16,10 @@
       </header>
 
       <section class="section stack">
+        <div class="metric">
+          <div class="metric-value" id="filteredCount">0</div>
+          <div class="muted">本次已过滤</div>
+        </div>
         <label class="switch">
           <input type="checkbox" id="enabled">
           <span>启用扫描</span>
@@ -24,14 +28,6 @@
           <button class="primary" id="openOptions">设置</button>
         </div>
         <div class="muted" id="notice"></div>
-      </section>
-
-      <section class="section stack">
-        <div class="row">
-          <h2>最近日志</h2>
-          <button id="clearLogs">清空</button>
-        </div>
-        <div class="log-list" id="logs"></div>
       </section>
     </main>
     <script type="module" src="popup.js"></script>

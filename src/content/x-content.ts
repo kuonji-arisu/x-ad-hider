@@ -15,6 +15,7 @@ type CellState = {
 const recentLogKeys: string[] = [];
 const recentLogSet = new Set<string>();
 const MAX_RECENT_LOG_KEYS = 500;
+let sessionFilteredCount = 0;
 
 (function () {
   void start().catch((error) => {
@@ -58,6 +59,7 @@ async function start(): Promise<void> {
   });
 
   timelineLifecycle.start();
+  installContentMessageRouter();
 
   function mountTimeline(mount: TimelineMount): void {
     activeTimeline = mount;
@@ -139,6 +141,7 @@ function reportHideDecision(signature: string, decision: HideDecision): void {
   }
 
   rememberLogKey(logKey);
+  sessionFilteredCount += 1;
   void sendMessage({
     type: MESSAGE_TYPES.ADD_LOG,
     payload: decision
@@ -157,6 +160,21 @@ function rememberLogKey(logKey: string): void {
       recentLogSet.delete(expired);
     }
   }
+}
+
+function installContentMessageRouter(): void {
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if ((message as RuntimeMessage | undefined)?.type !== MESSAGE_TYPES.GET_CONTENT_STATS) {
+      return;
+    }
+
+    sendResponse({
+      ok: true,
+      payload: {
+        filteredCount: sessionFilteredCount
+      }
+    });
+  });
 }
 
 function sendMessage<T>(message: RuntimeMessage): Promise<T> {

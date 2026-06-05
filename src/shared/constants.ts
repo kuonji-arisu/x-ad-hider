@@ -3,7 +3,8 @@ export const MESSAGE_TYPES = Object.freeze({
   SAVE_SETTINGS: "settings:save",
   ADD_LOG: "logs:add",
   GET_LOGS: "logs:get",
-  CLEAR_LOGS: "logs:clear"
+  CLEAR_LOGS: "logs:clear",
+  GET_CONTENT_STATS: "content:stats"
 });
 
 export const LOG_LEVELS = Object.freeze({

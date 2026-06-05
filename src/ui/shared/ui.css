@@ -162,6 +162,21 @@ h2 {
   font-weight: 650;
 }
 
+.metric {
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 2px;
+  padding-bottom: 12px;
+}
+
+.metric-value {
+  color: var(--accent);
+  font-size: 34px;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
 .switch {
   align-items: center;
   display: inline-flex;

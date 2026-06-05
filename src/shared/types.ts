@@ -44,12 +44,17 @@ export type LogEntry = {
   message: string;
 };
 
+export type Stats = {
+  filteredCount: number;
+};
+
 export type RuntimeMessage =
   | { type: "settings:get" }
   | { type: "settings:save"; payload: Partial<Settings> }
   | { type: "logs:add"; payload: HideDecision }
   | { type: "logs:get" }
-  | { type: "logs:clear" };
+  | { type: "logs:clear" }
+  | { type: "content:stats" };
 
 export type RuntimeResponse<T = unknown> =
   | { ok: true; payload: T }
