@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>X Ad Hider</title>
+    <link rel="stylesheet" href="../shared/ui.css">
+  </head>
+  <body>
+    <main class="shell popup-shell stack">
+      <header class="topbar">
+        <div>
+          <h1>X Ad Hider</h1>
+          <div class="muted" id="summary">Loading...</div>
+        </div>
+      </header>
+
+      <section class="section stack">
+        <label class="switch">
+          <input type="checkbox" id="enabled">
+          <span>启用扫描</span>
+        </label>
+        <div class="actions">
+          <button class="primary" id="openOptions">设置</button>
+        </div>
+        <div class="muted" id="notice"></div>
+      </section>
+
+      <section class="section stack">
+        <div class="row">
+          <h2>最近日志</h2>
+          <button id="clearLogs">清空</button>
+        </div>
+        <div class="log-list" id="logs"></div>
+      </section>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

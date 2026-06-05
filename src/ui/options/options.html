@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>X Ad Hider 设置</title>
+    <link rel="stylesheet" href="../shared/ui.css">
+  </head>
+  <body>
+    <main class="page-shell stack">
+      <header class="topbar">
+        <div>
+          <h1>X Ad Hider 设置</h1>
+          <div class="muted">正文或用户名命中后只在本地隐藏推文和回复。</div>
+        </div>
+      </header>
+
+      <section class="section stack">
+        <div class="row">
+          <label class="switch">
+            <input type="checkbox" id="enabled">
+            <span>启用扫描</span>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="primary" id="save">保存设置</button>
+        </div>
+        <div class="muted" id="notice"></div>
+      </section>
+
+      <section class="split">
+        <div class="section stack">
+          <h2>正文关键词</h2>
+          <div class="field">
+            <label for="keywords">每行一个，大小写不敏感</label>
+            <textarea id="keywords" spellcheck="false" placeholder="airdrop&#10;giveaway&#10;t.me/"></textarea>
+          </div>
+        </div>
+        <div class="section stack">
+          <h2>用户名关键词</h2>
+          <div class="field">
+            <label for="usernameKeywords">匹配显示名或 @handle，每行一个</label>
+            <textarea id="usernameKeywords" spellcheck="false" placeholder="promo&#10;airdrop&#10;bot"></textarea>
+          </div>
+        </div>
+        <div class="section stack">
+          <h2>白名单</h2>
+          <div class="field">
+            <label for="whitelist">每行一个 handle，可带 @</label>
+            <textarea id="whitelist" spellcheck="false" placeholder="@trusted_account"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="section stack">
+        <div class="row">
+          <h2>最近日志</h2>
+          <button id="clearLogs">清空日志</button>
+        </div>
+        <div class="log-list" id="logs"></div>
+      </section>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>
