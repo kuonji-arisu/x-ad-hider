@@ -3,11 +3,36 @@ import type { LogEntry, Settings } from "../shared/types.js";
 import { normalizeSettings } from "../shared/settings.js";
 
 function getFromStorage(keys: string | string[]): Promise<Record<string, unknown>> {
-  return new Promise((resolve) => chrome.storage.local.get(keys, resolve));
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(keys, (items) => {
+      const error = getChromeRuntimeError();
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve(items);
+    });
+  });
 }
 
 function setInStorage(values: Record<string, unknown>): Promise<void> {
-  return new Promise((resolve) => chrome.storage.local.set(values, () => resolve()));
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.set(values, () => {
+      const error = getChromeRuntimeError();
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve();
+    });
+  });
+}
+
+function getChromeRuntimeError(): Error | null {
+  const lastError = chrome.runtime.lastError;
+  return lastError ? new Error(lastError.message || "Chrome runtime error") : null;
 }
 
 export async function getSettings(): Promise<Settings> {

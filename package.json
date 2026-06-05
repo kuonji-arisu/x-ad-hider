@@ -6,10 +6,15 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "ci": "pnpm run typecheck && pnpm run test && pnpm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "esbuild": "^0.28.0",
-    "typescript": "^5.9.0"
+    "jsdom": "^29.1.1",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.8"
   }
 }

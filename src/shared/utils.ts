@@ -37,11 +37,19 @@ export function uniqueCleanList(
 
 export function textSample(text: unknown, maxLength: number): string {
   const compact = String(text || "").replace(/\s+/g, " ").trim();
+  if (maxLength <= 0) {
+    return "";
+  }
+
   if (compact.length <= maxLength) {
     return compact;
   }
 
-  return `${compact.slice(0, maxLength - 1)}...`;
+  if (maxLength <= 3) {
+    return ".".repeat(maxLength);
+  }
+
+  return `${compact.slice(0, maxLength - 3)}...`;
 }
 
 export function serializeError(error: unknown): string {
