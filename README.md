@@ -10,7 +10,8 @@ X Ad Hider is a personal Chrome MV3 extension for locally hiding unwanted posts 
 - Extract emoji rendered as `img[alt]` so emoji rules can match X's rendered DOM.
 - Hide the whole X timeline item instead of only the `article`, avoiding leftover spacer rows.
 - Use a virtual-list-friendly hide flow that keeps scrolling stable while X is loading many replies.
-- Show recent local hide logs in the popup and options page.
+- Show recent local hide logs in the options page.
+- Import and export settings as readable JSON.
 
 ## Install
 
@@ -27,7 +28,7 @@ X Ad Hider is a personal Chrome MV3 extension for locally hiding unwanted posts 
 5. Select:
 
    ```text
-   outputs/x-ad-muter/dist
+   dist
    ```
 
 ## Usage
@@ -39,6 +40,8 @@ Open the extension options page and configure:
 - **Whitelist**: handles that should never be hidden.
 
 All rules are case-insensitive. Matches are local to your browser and do not change your X account relationships.
+
+Settings can be exported from the options page as a UTF-8 JSON file and imported later. Import replaces the current settings. Logs and runtime counters are not included.
 
 ## Development
 
