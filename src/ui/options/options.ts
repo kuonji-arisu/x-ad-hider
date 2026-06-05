@@ -5,43 +5,68 @@ import {
   SETTINGS_EXPORT_MAX_BYTES,
   type SettingsExportFile
 } from "../../shared/settings-export.js";
+import { normalizeSettings } from "../../shared/settings.js";
 import type { LogEntry, RuntimeMessage, RuntimeResponse, Settings } from "../../shared/types.js";
+
+type OptionsTab = "settings" | "logs";
 
 const enabledInput = getElement<HTMLInputElement>("enabled");
 const keywordsInput = getElement<HTMLTextAreaElement>("keywords");
 const usernameKeywordsInput = getElement<HTMLTextAreaElement>("usernameKeywords");
 const whitelistInput = getElement<HTMLTextAreaElement>("whitelist");
 const importFileInput = getElement<HTMLInputElement>("importFile");
+const saveButton = getElement<HTMLButtonElement>("save");
+const settingsPanel = getElement<HTMLElement>("settingsPanel");
+const logsPanel = getElement<HTMLElement>("logsPanel");
 const logsElement = getElement<HTMLElement>("logs");
 const notice = getElement<HTMLElement>("notice");
+const tabButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-tab]"));
+const settingsInputs = [
+  enabledInput,
+  keywordsInput,
+  usernameKeywordsInput,
+  whitelistInput
+];
 
-getElement<HTMLButtonElement>("save").addEventListener("click", () => runAction(async () => {
-  await saveSettings();
-  notice.textContent = "已保存";
+let savedSettings: Settings | null = null;
+let activeTab: OptionsTab = "settings";
+
+saveButton.addEventListener("click", () => runSettingsAction(async () => {
+  const settings = await saveSettings();
+  applySavedSettings(settings);
+  setNotice("已保存");
 }));
 getElement<HTMLButtonElement>("importSettings").addEventListener("click", () => {
   importFileInput.value = "";
   importFileInput.click();
 });
-getElement<HTMLButtonElement>("exportSettings").addEventListener("click", () => runAction(async () => {
+getElement<HTMLButtonElement>("exportSettings").addEventListener("click", () => runSettingsAction(async () => {
   exportSettings();
-  notice.textContent = "已导出";
+  setNotice(hasUnsavedChanges() ? "已导出，当前更改尚未保存" : "已导出");
 }));
-importFileInput.addEventListener("change", () => runAction(async () => {
+importFileInput.addEventListener("change", () => runSettingsAction(async () => {
   const file = importFileInput.files?.[0];
   if (!file) {
     return;
   }
 
-  await importSettingsFile(file);
-  notice.textContent = "已导入";
+  const settings = await importSettingsFile(file);
+  applySavedSettings(settings);
+  setNotice("已导入");
 }));
 getElement<HTMLButtonElement>("clearLogs").addEventListener("click", async () => {
-  await runAction(async () => {
+  await runLogAction(async () => {
     await sendMessage({ type: MESSAGE_TYPES.CLEAR_LOGS });
-    await refresh();
+    renderLogs([]);
   });
 });
+for (const input of settingsInputs) {
+  input.addEventListener("input", () => updateDirtyState());
+  input.addEventListener("change", () => updateDirtyState());
+}
+for (const button of tabButtons) {
+  button.addEventListener("click", () => switchTab(readTab(button)));
+}
 
 refresh();
 
@@ -51,12 +76,12 @@ async function refresh() {
     sendMessage<LogEntry[]>({ type: MESSAGE_TYPES.GET_LOGS })
   ]);
 
-  applySettings(settings);
+  applySavedSettings(settings);
   renderLogs(logs);
 }
 
-async function saveSettings() {
-  await sendMessage({
+async function saveSettings(): Promise<Settings> {
+  return sendMessage<Settings>({
     type: MESSAGE_TYPES.SAVE_SETTINGS,
     payload: readSettingsFromForm()
   });
@@ -66,18 +91,16 @@ function exportSettings(): void {
   downloadSettingsExport(createSettingsExport(readSettingsFromForm()));
 }
 
-async function importSettingsFile(file: File): Promise<void> {
+async function importSettingsFile(file: File): Promise<Settings> {
   if (file.size > SETTINGS_EXPORT_MAX_BYTES) {
     throw new Error("导入文件过大");
   }
 
   const settings = parseSettingsExportText(await file.text());
-  const savedSettings = await sendMessage<Settings>({
+  return sendMessage<Settings>({
     type: MESSAGE_TYPES.SAVE_SETTINGS,
     payload: settings
   });
-
-  applySettings(savedSettings);
 }
 
 function readSettingsFromForm(): Settings {
@@ -96,6 +119,54 @@ function applySettings(settings: Settings): void {
   whitelistInput.value = settings.whitelistHandles.map((handle) => `@${handle}`).join("\n");
 }
 
+function applySavedSettings(settings: Settings): void {
+  savedSettings = normalizeSettings(settings);
+  applySettings(savedSettings);
+  updateDirtyState({ preserveNotice: true });
+}
+
+function hasUnsavedChanges(): boolean {
+  return Boolean(savedSettings && settingsFingerprint(readSettingsFromForm()) !== settingsFingerprint(savedSettings));
+}
+
+function updateDirtyState(options: { preserveNotice?: boolean } = {}): void {
+  const dirty = hasUnsavedChanges();
+  saveButton.disabled = !savedSettings || !dirty;
+
+  if (!options.preserveNotice) {
+    setNotice(dirty ? "有未保存更改" : "");
+  }
+}
+
+function settingsFingerprint(settings: Partial<Settings>): string {
+  return JSON.stringify(normalizeSettings(settings));
+}
+
+function switchTab(nextTab: OptionsTab): void {
+  activeTab = nextTab;
+
+  for (const button of tabButtons) {
+    const isSelected = readTab(button) === activeTab;
+    button.classList.toggle("active", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  }
+
+  settingsPanel.hidden = activeTab !== "settings";
+  logsPanel.hidden = activeTab !== "logs";
+
+  if (activeTab === "logs") {
+    void refreshLogs().catch((error) => renderLogError(error));
+  }
+}
+
+function readTab(button: HTMLButtonElement): OptionsTab {
+  return button.dataset.tab === "logs" ? "logs" : "settings";
+}
+
+async function refreshLogs(): Promise<void> {
+  renderLogs(await sendMessage<LogEntry[]>({ type: MESSAGE_TYPES.GET_LOGS }));
+}
+
 function downloadSettingsExport(file: SettingsExportFile): void {
   const content = `${JSON.stringify(file, null, 2)}\n`;
   const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
@@ -108,13 +179,30 @@ function downloadSettingsExport(file: SettingsExportFile): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-async function runAction(action: () => Promise<void>): Promise<void> {
-  notice.textContent = "";
+async function runSettingsAction(action: () => Promise<void>): Promise<void> {
+  setNotice("");
+  try {
+    await action();
+    updateDirtyState({ preserveNotice: true });
+  } catch (error) {
+    setNotice(error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function runLogAction(action: () => Promise<void>): Promise<void> {
   try {
     await action();
   } catch (error) {
-    notice.textContent = error instanceof Error ? error.message : String(error);
+    renderLogError(error);
   }
+}
+
+function setNotice(message: string): void {
+  notice.textContent = message;
+}
+
+function renderLogError(error: unknown): void {
+  logsElement.innerHTML = `<div class="muted">${escapeHtml(error instanceof Error ? error.message : String(error))}</div>`;
 }
 
 function renderLogs(logs: LogEntry[]): void {

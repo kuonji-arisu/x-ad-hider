@@ -15,50 +15,57 @@
         </div>
       </header>
 
-      <section class="section stack">
-        <div class="row">
+      <nav class="tabs" aria-label="设置分区">
+        <button class="tab active" id="settingsTab" type="button" data-tab="settings" aria-pressed="true" aria-controls="settingsPanel">规则设置</button>
+        <button class="tab" id="logsTab" type="button" data-tab="logs" aria-pressed="false" aria-controls="logsPanel">隐藏日志</button>
+      </nav>
+
+      <section class="section panel settings-panel" id="settingsPanel" aria-labelledby="settingsTab">
+        <div class="section-heading">
+          <h2>规则设置</h2>
           <label class="switch">
             <input type="checkbox" id="enabled">
             <span>启用扫描</span>
           </label>
         </div>
-        <div class="actions">
-          <button class="primary" id="save">保存设置</button>
-          <button id="importSettings">导入设置</button>
-          <button id="exportSettings">导出设置</button>
-          <input type="file" id="importFile" accept="application/json,.json" hidden>
-        </div>
-        <div class="muted" id="notice"></div>
-      </section>
 
-      <section class="split">
-        <div class="section stack">
-          <h2>正文关键词</h2>
+        <div class="rule-form">
           <div class="field">
-            <label for="keywords">每行一个，大小写不敏感</label>
+            <label for="keywords">正文关键词</label>
             <textarea id="keywords" spellcheck="false" placeholder="airdrop&#10;giveaway&#10;t.me/"></textarea>
+            <div class="muted field-hint">每行一个，大小写不敏感。</div>
           </div>
-        </div>
-        <div class="section stack">
-          <h2>用户名关键词</h2>
+
           <div class="field">
-            <label for="usernameKeywords">匹配显示名或 @handle，每行一个</label>
+            <label for="usernameKeywords">用户名关键词</label>
             <textarea id="usernameKeywords" spellcheck="false" placeholder="promo&#10;airdrop&#10;bot"></textarea>
+            <div class="muted field-hint">匹配显示名或 @handle，每行一个。</div>
+          </div>
+
+          <div class="field">
+            <label for="whitelist">白名单</label>
+            <textarea id="whitelist" spellcheck="false" placeholder="@trusted_account"></textarea>
+            <div class="muted field-hint">每行一个 handle，可带 @。</div>
           </div>
         </div>
-        <div class="section stack">
-          <h2>白名单</h2>
-          <div class="field">
-            <label for="whitelist">每行一个 handle，可带 @</label>
-            <textarea id="whitelist" spellcheck="false" placeholder="@trusted_account"></textarea>
+
+        <div class="action-bar">
+          <div class="actions">
+            <button id="importSettings" type="button">导入设置</button>
+            <button id="exportSettings" type="button">导出设置</button>
+            <input type="file" id="importFile" accept="application/json,.json" hidden>
+          </div>
+          <div class="actions action-primary">
+            <span class="muted notice" id="notice"></span>
+            <button class="primary" id="save" type="button" disabled>保存全部设置</button>
           </div>
         </div>
       </section>
 
-      <section class="section stack">
-        <div class="row">
-          <h2>最近日志</h2>
-          <button id="clearLogs">清空日志</button>
+      <section class="section panel logs-panel" id="logsPanel" aria-labelledby="logsTab" hidden>
+        <div class="section-heading">
+          <h2>隐藏日志</h2>
+          <button id="clearLogs" type="button">清空日志</button>
         </div>
         <div class="log-list" id="logs"></div>
       </section>

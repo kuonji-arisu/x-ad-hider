@@ -34,6 +34,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -68,7 +72,8 @@ button.primary:hover {
   background: var(--accent-strong);
 }
 
-button:disabled {
+button:disabled,
+button.primary:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
@@ -85,7 +90,7 @@ textarea {
 
 textarea {
   min-height: 140px;
-  resize: vertical;
+  resize: none;
 }
 
 .shell {
@@ -118,7 +123,7 @@ h1 {
 
 h2 {
   font-size: 15px;
-  margin: 0 0 10px;
+  margin: 0;
 }
 
 .muted {
@@ -138,10 +143,25 @@ h2 {
   padding: 14px;
 }
 
-.row {
+.panel {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-panel,
+.logs-panel {
+  min-height: 760px;
+}
+
+.logs-panel {
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 760px;
+}
+
+.section-heading {
   align-items: center;
   display: flex;
-  gap: 10px;
+  gap: 12px;
   justify-content: space-between;
 }
 
@@ -151,15 +171,65 @@ h2 {
   gap: 8px;
 }
 
+.action-primary {
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.action-bar {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding-top: 14px;
+}
+
 .field {
   display: grid;
   gap: 6px;
 }
 
 .field label {
-  color: var(--muted);
-  font-size: 12px;
+  color: var(--text);
+  font-size: 14px;
   font-weight: 650;
+}
+
+.field-hint {
+  font-size: 12px;
+}
+
+.notice {
+  min-height: 20px;
+}
+
+.rule-form {
+  display: grid;
+  gap: 14px;
+}
+
+.tabs {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  min-height: 38px;
+  padding: 8px 12px;
+}
+
+.tab.active {
+  border-bottom-color: var(--accent);
+  color: var(--text);
+  font-weight: 700;
 }
 
 .metric {
@@ -216,7 +286,9 @@ h2 {
 .log-list {
   display: grid;
   gap: 8px;
-  max-height: 300px;
+  align-content: start;
+  max-height: 100%;
+  min-height: 0;
   overflow: auto;
 }
 
@@ -257,14 +329,14 @@ h2 {
   border-left: 3px solid var(--danger);
 }
 
-.split {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
 @media (max-width: 720px) {
-  .split {
-    grid-template-columns: 1fr;
+  .action-bar,
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .action-primary {
+    justify-content: flex-start;
   }
 }
