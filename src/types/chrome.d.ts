@@ -17,6 +17,13 @@ declare namespace chrome {
   }
 
   namespace storage {
+    type StorageAreaName = "local" | "sync" | "managed" | "session";
+
+    type StorageChange = {
+      oldValue?: unknown;
+      newValue?: unknown;
+    };
+
     namespace local {
       function get(
         keys: string | string[] | Record<string, unknown> | null,
@@ -24,6 +31,12 @@ declare namespace chrome {
       ): void;
       function set(items: Record<string, unknown>, callback?: () => void): void;
       function remove(keys: string | string[], callback?: () => void): void;
+    }
+
+    namespace onChanged {
+      function addListener(
+        callback: (changes: Record<string, StorageChange>, areaName: StorageAreaName) => void
+      ): void;
     }
   }
 }

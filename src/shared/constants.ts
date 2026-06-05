@@ -1,7 +1,7 @@
 export const MESSAGE_TYPES = Object.freeze({
-  CANDIDATE_DETECTED: "candidate:detected",
   GET_SETTINGS: "settings:get",
   SAVE_SETTINGS: "settings:save",
+  ADD_LOG: "logs:add",
   GET_LOGS: "logs:get",
   CLEAR_LOGS: "logs:clear"
 });

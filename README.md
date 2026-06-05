@@ -9,6 +9,7 @@ X Ad Hider is a personal Chrome MV3 extension for locally hiding unwanted posts 
 - Keep a handle whitelist that always wins over hide rules.
 - Extract emoji rendered as `img[alt]` so emoji rules can match X's rendered DOM.
 - Hide the whole X timeline item instead of only the `article`, avoiding leftover spacer rows.
+- Use a virtual-list-friendly hide flow that keeps scrolling stable while X is loading many replies.
 - Show recent local hide logs in the popup and options page.
 
 ## Install
@@ -56,9 +57,9 @@ Edit source files under `src/`, rebuild, then reload the unpacked extension from
 ```text
 src/
   background/   MV3 service worker and message routing
-  content/      X DOM scanning, parsing, and timeline item hiding
+  content/      X timeline discovery, parsing, scheduling, and hiding
   rules/        Rule evaluation
-  shared/       Constants, types, and utilities
+  shared/       Constants, settings normalization, types, and utilities
   storage/      chrome.storage.local access
   ui/           Popup and options pages
   types/        Chrome API type declarations
@@ -69,15 +70,28 @@ dist/           Generated extension bundle loaded by Chrome
 
 ## Design Notes
 
-The content script scans X `article` nodes, extracts body text, username text, handle, and tweet URL, then asks the background rule engine for a decision.
+The content script treats X as a virtualized event stream. A page-level lifecycle observer only discovers or replaces the active timeline; scanning then stays inside a container derived from timeline cells. Ready cells are parsed into normalized candidates, evaluated synchronously from a local settings cache, and the background service worker is only used for storage and log writes.
 
-When a rule matches, the extension hides the containing X timeline item:
+The X-specific DOM boundary is the timeline cell:
 
 ```text
 [data-testid="cellInnerDiv"]
 ```
 
 There is no fallback to hiding only `article`. If X changes the timeline item selector, hiding should fail clearly rather than leave partial UI artifacts. Update `src/content/timeline-adapter.ts` if that selector changes.
+
+The active timeline container is derived from the shared parent structure of those cells. The extension does not use parallel CSS selectors, API interception, or alternate DOM fallbacks for filtering.
+
+The content pipeline is split by responsibility:
+
+- `observer-manager.ts`: owns named page and timeline observers and disconnects scopes cleanly.
+- `timeline-lifecycle.ts`: discovers the active timeline and remounts when X replaces it.
+- `timeline-adapter.ts`: finds X timeline cells and reports viewport relation.
+- `candidate-parser.ts`: extracts handle, username text, body text, tweet URL, and a DOM reuse signature.
+- `text-extractor.ts`: extracts text and preserves emoji rendered through `img[alt]`.
+- `content-rule-cache.ts`: keeps settings in content and runs the shared rule engine synchronously.
+- `scan-scheduler.ts`: batches nearby cells first and retries pending cells with bounded backoff.
+- `hide-controller.ts`: reserves height while the user is actively scrolling, then compacts hidden cells when scrolling is idle.
 
 ## Limitations
 

@@ -1,6 +1,6 @@
 import { MAX_LOGS, STORAGE_KEYS } from "../shared/constants.js";
 import type { LogEntry, Settings } from "../shared/types.js";
-import { normalizeHandle, normalizeKeyword, uniqueCleanList } from "../shared/utils.js";
+import { normalizeSettings } from "../shared/settings.js";
 
 function getFromStorage(keys: string | string[]): Promise<Record<string, unknown>> {
   return new Promise((resolve) => chrome.storage.local.get(keys, resolve));
@@ -20,15 +20,6 @@ export async function saveSettings(nextSettings: Partial<Settings>): Promise<Set
   const settings = normalizeSettings({ ...current, ...nextSettings });
   await setInStorage({ [STORAGE_KEYS.SETTINGS]: settings });
   return settings;
-}
-
-export function normalizeSettings(settings: Partial<Settings> = {}): Settings {
-  return {
-    enabled: settings.enabled !== false,
-    keywords: uniqueCleanList(settings.keywords || [], normalizeKeyword),
-    usernameKeywords: uniqueCleanList(settings.usernameKeywords || [], normalizeKeyword),
-    whitelistHandles: uniqueCleanList(settings.whitelistHandles || [], normalizeHandle)
-  };
 }
 
 export async function getLogs(): Promise<LogEntry[]> {

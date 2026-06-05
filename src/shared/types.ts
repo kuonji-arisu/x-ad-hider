@@ -45,9 +45,9 @@ export type LogEntry = {
 };
 
 export type RuntimeMessage =
-  | { type: "candidate:detected"; payload: TweetCandidate }
   | { type: "settings:get" }
   | { type: "settings:save"; payload: Partial<Settings> }
+  | { type: "logs:add"; payload: HideDecision }
   | { type: "logs:get" }
   | { type: "logs:clear" };
 

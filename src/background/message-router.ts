@@ -1,6 +1,5 @@
 import { MESSAGE_TYPES, LOG_LEVELS } from "../shared/constants.js";
-import { decideCandidate } from "../rules/rule-engine.js";
-import type { RuntimeMessage, TweetCandidate } from "../shared/types.js";
+import type { HideDecision, RuntimeMessage } from "../shared/types.js";
 import {
   addLog,
   clearLogs,
@@ -22,12 +21,12 @@ export function installMessageRouter() {
 
 async function handleMessage(message: RuntimeMessage): Promise<unknown> {
   switch (message?.type) {
-    case MESSAGE_TYPES.CANDIDATE_DETECTED:
-      return handleCandidate(message.payload);
     case MESSAGE_TYPES.GET_SETTINGS:
       return getSettings();
     case MESSAGE_TYPES.SAVE_SETTINGS:
       return saveSettings(message.payload);
+    case MESSAGE_TYPES.ADD_LOG:
+      return handleHideLog(message.payload);
     case MESSAGE_TYPES.GET_LOGS:
       return getLogs();
     case MESSAGE_TYPES.CLEAR_LOGS:
@@ -38,15 +37,12 @@ async function handleMessage(message: RuntimeMessage): Promise<unknown> {
   }
 }
 
-async function handleCandidate(candidate: TweetCandidate): Promise<unknown> {
-  const settings = await getSettings();
-  const decision = decideCandidate(settings, candidate);
-
+async function handleHideLog(decision: HideDecision): Promise<unknown> {
   if (decision.action !== "hide") {
-    return decision;
+    throw new Error("Only hide decisions can be logged");
   }
 
-  await addLog({
+  const entry = await addLog({
     level: LOG_LEVELS.INFO,
     type: "local_hide",
     handle: decision.handle,
@@ -57,12 +53,7 @@ async function handleCandidate(candidate: TweetCandidate): Promise<unknown> {
     message: `${displayHandle(decision.handle)} hidden by ${formatMatchedField(decision.matchedField)} "${decision.matchedKeyword}"`
   });
 
-  return {
-    action: "hide",
-    handle: decision.handle,
-    matchedKeyword: decision.matchedKeyword,
-    matchedField: decision.matchedField
-  };
+  return entry;
 }
 
 function formatMatchedField(field: string): string {
