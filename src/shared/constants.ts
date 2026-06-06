@@ -16,6 +16,7 @@ export const LOG_LEVELS = Object.freeze({
 
 export const DEFAULT_SETTINGS = Object.freeze({
   enabled: true,
+  pinyinFuzzyMatching: false,
   keywords: [],
   usernameKeywords: [],
   whitelistHandles: []

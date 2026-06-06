@@ -27,6 +27,7 @@ function installChromeMock(initialStore: Record<string, unknown> = {}): ChromeMo
       get lastError() {
         return lastError;
       },
+      getURL: vi.fn((path: string) => path),
       sendMessage: vi.fn(),
       openOptionsPage: vi.fn(),
       onMessage: {
@@ -103,6 +104,7 @@ describe("storage", () => {
   it("returns normalized default settings from empty storage", async () => {
     await expect(getSettings()).resolves.toEqual({
       enabled: true,
+      pinyinFuzzyMatching: false,
       keywords: [],
       usernameKeywords: [],
       whitelistHandles: []
@@ -113,6 +115,7 @@ describe("storage", () => {
     const mock = installChromeMock({
       [STORAGE_KEYS.SETTINGS]: {
         enabled: true,
+        pinyinFuzzyMatching: true,
         keywords: ["promo"],
         usernameKeywords: ["bot"],
         whitelistHandles: ["alice"]
@@ -124,12 +127,14 @@ describe("storage", () => {
       keywords: [" Promo ", "Airdrop"]
     })).resolves.toEqual({
       enabled: false,
+      pinyinFuzzyMatching: true,
       keywords: ["promo", "airdrop"],
       usernameKeywords: ["bot"],
       whitelistHandles: ["alice"]
     });
     expect(mock.__store[STORAGE_KEYS.SETTINGS]).toEqual({
       enabled: false,
+      pinyinFuzzyMatching: true,
       keywords: ["promo", "airdrop"],
       usernameKeywords: ["bot"],
       whitelistHandles: ["alice"]

@@ -41,6 +41,7 @@ export function parseSettingsExportText(text: string): Settings {
   const settings = requireRecord(file.settings, "导入文件缺少设置内容");
   return normalizeSettings({
     enabled: readBoolean(settings, "enabled"),
+    pinyinFuzzyMatching: readBoolean(settings, "pinyinFuzzyMatching"),
     keywords: readStringList(settings, "keywords"),
     usernameKeywords: readStringList(settings, "usernameKeywords"),
     whitelistHandles: readStringList(settings, "whitelistHandles")

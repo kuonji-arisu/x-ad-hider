@@ -2,6 +2,7 @@ declare namespace chrome {
   namespace runtime {
     const lastError: { message?: string } | undefined;
 
+    function getURL(path: string): string;
     function sendMessage(message: unknown, callback: (response: unknown) => void): void;
     function openOptionsPage(): void;
 

@@ -31,6 +31,14 @@
 
         <div class="rule-form">
           <div class="field">
+            <label class="switch">
+              <input type="checkbox" id="pinyinFuzzyMatching">
+              <span>拼音模糊匹配</span>
+            </label>
+            <div class="muted field-hint">中文关键词按同拼音匹配；英文、数字和符号仍按原文匹配。</div>
+          </div>
+
+          <div class="field">
             <label for="keywords">正文关键词</label>
             <textarea id="keywords" spellcheck="false" placeholder="airdrop&#10;giveaway&#10;t.me/"></textarea>
             <div class="muted field-hint">每行一个，大小写不敏感。</div>

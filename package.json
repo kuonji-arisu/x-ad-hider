@@ -16,5 +16,8 @@
     "jsdom": "^29.1.1",
     "typescript": "^5.9.0",
     "vitest": "^4.1.8"
+  },
+  "dependencies": {
+    "pinyin-pro": "^3.28.1"
   }
 }
