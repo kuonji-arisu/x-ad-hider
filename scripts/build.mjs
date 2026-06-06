@@ -29,6 +29,11 @@ await Promise.all([
     format: "iife"
   }),
   bundle({
+    entry: "rules/match-signature.ts",
+    outfile: "content/match-signature.js",
+    format: "esm"
+  }),
+  bundle({
     entry: "ui/options/options.ts",
     outfile: "ui/options/options.js",
     format: "esm"
@@ -56,7 +61,7 @@ function bundle({ entry, outfile, format }) {
     target: "es2022",
     platform: "browser",
     sourcemap: false,
-    minify: false,
+    minify: true,
     logLevel: "info"
   });
 }

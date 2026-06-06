@@ -21,6 +21,7 @@ describe("settings export", () => {
       exportedAt: "2026-06-06T01:02:03.000Z",
       settings: {
         enabled: true,
+        pinyinFuzzyMatching: false,
         keywords: ["promo"],
         usernameKeywords: ["bot"],
         whitelistHandles: ["alice"]
@@ -35,6 +36,7 @@ describe("settings export", () => {
       exportedAt: "2026-06-06T01:02:03.000Z",
       settings: {
         enabled: false,
+        pinyinFuzzyMatching: true,
         keywords: [" Scam ", "scam", ""],
         usernameKeywords: ["Bot"],
         whitelistHandles: ["@Trusted", "trusted"]
@@ -43,9 +45,24 @@ describe("settings export", () => {
 
     expect(parseSettingsExportText(text)).toEqual({
       enabled: false,
+      pinyinFuzzyMatching: true,
       keywords: ["scam"],
       usernameKeywords: ["bot"],
       whitelistHandles: ["trusted"]
+    });
+  });
+
+  it("uses pinyin fuzzy matching defaults when importing older settings", () => {
+    const text = JSON.stringify({
+      format: SETTINGS_EXPORT_FORMAT,
+      version: SETTINGS_EXPORT_VERSION,
+      settings: {
+        keywords: ["广告"]
+      }
+    });
+
+    expect(parseSettingsExportText(text)).toMatchObject({
+      pinyinFuzzyMatching: false
     });
   });
 
@@ -76,6 +93,7 @@ describe("settings export", () => {
     });
 
     expect(() => parseSettingsExportText(build({ enabled: "yes" }))).toThrow("设置字段 enabled 必须是布尔值");
+    expect(() => parseSettingsExportText(build({ pinyinFuzzyMatching: "yes" }))).toThrow("设置字段 pinyinFuzzyMatching 必须是布尔值");
     expect(() => parseSettingsExportText(build({ keywords: "promo" }))).toThrow("设置字段 keywords 必须是数组");
     expect(() => parseSettingsExportText(build({ keywords: ["promo", 123] }))).toThrow("设置字段 keywords 只能包含字符串");
   });

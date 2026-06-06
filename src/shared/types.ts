@@ -2,6 +2,7 @@ export type MatchedField = "text" | "username";
 
 export type Settings = {
   enabled: boolean;
+  pinyinFuzzyMatching: boolean;
   keywords: string[];
   usernameKeywords: string[];
   whitelistHandles: string[];

@@ -38,6 +38,7 @@ Open the extension options page and configure:
 - **Body keywords**: matches post/reply text.
 - **Username keywords**: matches display name, `@handle`, and handle text without `@`.
 - **Whitelist**: handles that should never be hidden.
+- **Pinyin fuzzy matching**: optional mode that treats Chinese characters with the same pinyin as equivalent while leaving latin text, numbers, and symbols as literal text.
 
 All rules are case-insensitive. Matches are local to your browser and do not change your X account relationships.
 

@@ -9,6 +9,7 @@ describe("normalizeSettings", () => {
       whitelistHandles: [" @Alice ", "alice", "@Bob"]
     })).toEqual({
       enabled: true,
+      pinyinFuzzyMatching: false,
       keywords: ["promo"],
       usernameKeywords: ["bot"],
       whitelistHandles: ["alice", "bob"]
@@ -17,5 +18,10 @@ describe("normalizeSettings", () => {
 
   it("preserves an explicit disabled state", () => {
     expect(normalizeSettings({ enabled: false }).enabled).toBe(false);
+  });
+
+  it("only enables pinyin fuzzy matching explicitly", () => {
+    expect(normalizeSettings({}).pinyinFuzzyMatching).toBe(false);
+    expect(normalizeSettings({ pinyinFuzzyMatching: true }).pinyinFuzzyMatching).toBe(true);
   });
 });

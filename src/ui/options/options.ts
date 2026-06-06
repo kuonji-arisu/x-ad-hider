@@ -11,6 +11,7 @@ import type { LogEntry, RuntimeMessage, RuntimeResponse, Settings } from "../../
 type OptionsTab = "settings" | "logs";
 
 const enabledInput = getElement<HTMLInputElement>("enabled");
+const pinyinFuzzyMatchingInput = getElement<HTMLInputElement>("pinyinFuzzyMatching");
 const keywordsInput = getElement<HTMLTextAreaElement>("keywords");
 const usernameKeywordsInput = getElement<HTMLTextAreaElement>("usernameKeywords");
 const whitelistInput = getElement<HTMLTextAreaElement>("whitelist");
@@ -23,6 +24,7 @@ const notice = getElement<HTMLElement>("notice");
 const tabButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-tab]"));
 const settingsInputs = [
   enabledInput,
+  pinyinFuzzyMatchingInput,
   keywordsInput,
   usernameKeywordsInput,
   whitelistInput
@@ -106,6 +108,7 @@ async function importSettingsFile(file: File): Promise<Settings> {
 function readSettingsFromForm(): Settings {
   return {
     enabled: enabledInput.checked,
+    pinyinFuzzyMatching: pinyinFuzzyMatchingInput.checked,
     keywords: lines(keywordsInput.value),
     usernameKeywords: lines(usernameKeywordsInput.value),
     whitelistHandles: lines(whitelistInput.value)
@@ -114,6 +117,7 @@ function readSettingsFromForm(): Settings {
 
 function applySettings(settings: Settings): void {
   enabledInput.checked = settings.enabled;
+  pinyinFuzzyMatchingInput.checked = settings.pinyinFuzzyMatching;
   keywordsInput.value = settings.keywords.join("\n");
   usernameKeywordsInput.value = settings.usernameKeywords.join("\n");
   whitelistInput.value = settings.whitelistHandles.map((handle) => `@${handle}`).join("\n");
